@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package comms;
+option go_package = "microservices/commspb";
+
+service Comms {
+  rpc SendConfirmation (ConfirmationRequest) returns (ConfirmationResponse);
+}
+
+message ConfirmationRequest {
+  string email = 1;
+  string id = 2;
+  string status = 3;
+  int64 amount = 4;
+}
+
+message ConfirmationResponse {
+  bool success = 1;
+}

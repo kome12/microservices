@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package products;
+option go_package = "microservices/productspb";
+
+service Products {
+  rpc GetShoes (ShoesRequest) returns (ShoesResponse);
+  rpc GetShoe (ShoeRequest) returns (ShoeResponse);
+}
+
+message ShoesRequest {}
+
+message ShoesResponse {
+  repeated ShoeResponse shoes = 1;
+}
+
+message ShoeRequest {
+  string id = 1;
+}
+
+message ShoeResponse {
+  string id = 1;
+  string name = 2;
+  int64 price = 3;
+}

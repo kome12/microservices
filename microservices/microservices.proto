@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package microservices;
+option go_package = "microservices/microservicespb";
+
+// service Microservices {
+//   rpc CreateCharge (ChargeRequest) returns (ChargeResponse);
+
+//   rpc SendConfirmation (ConfirmationRequest) returns (ConfirmationResponse);
+// }
+// message ChargeRequest {
+//   int64 amount = 1;
+// }
+
+// message ChargeResponse {
+//   bool success = 1;
+//   string id = 2;
+//   int64 amount = 3;
+// }
+
+// message ConfirmationRequest {
+//   string status = 1;
+// }
+
+// message ConfirmationResponse {
+//   bool success = 1;
+// }

@@ -1,0 +1,24 @@
+{
+  "shoes": [
+    {
+      "id": "001",
+      "name": "Nike Lebron 18",
+      "price": 22000
+    },
+    {
+      "id": "002",
+      "name": "Nike KD 14",
+      "price": 19250
+    },
+    {
+      "id": "003",
+      "name": "Zoom Freak 3",
+      "price": 14850
+    },
+    {
+      "id": "004",
+      "name": "Jordan \"Why Not?\" Zer0.4 PF",
+      "price": 17050
+    }
+  ]
+}
