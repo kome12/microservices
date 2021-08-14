@@ -21,6 +21,13 @@ type ShoeInput struct {
 	ShoeID string `json:"shoeId"`
 	Price int64 `json:"price"`
 	Email string `json:"email"`
+	ProductName string `json:"productName"`
+}
+
+type PurchaseStatus struct {
+	PaymentSuccessful bool
+	EmailSuccessful bool
+	Message string
 }
 
 func handleError(err error) {
@@ -59,6 +66,7 @@ func createContext() (context.Context, context.CancelFunc) {
 }
 
 func GetShoes(rw http.ResponseWriter, r *http.Request) {
+	fmt.Println("api processing getShoes...")
 	EnableCors(&rw)
 	connProducts := openProductsGRPC()
 	cProducts := pbProducts.NewProductsClient(connProducts)
@@ -77,6 +85,7 @@ func GetShoes(rw http.ResponseWriter, r *http.Request) {
 }
 
 func GetShoe(rw http.ResponseWriter, r *http.Request) {
+	fmt.Println("api processing getShoe (just 1)...")
 	EnableCors(&rw)
 	connProducts := openProductsGRPC()
 	cProducts := pbProducts.NewProductsClient(connProducts)
@@ -97,36 +106,51 @@ func GetShoe(rw http.ResponseWriter, r *http.Request) {
 
 func Purchase(rw http.ResponseWriter, r *http.Request) {
 	EnableCors(&rw)
-	connPayment := openPaymentGRPC()
-	cPayment := pbPayments.NewPaymentsClient(connPayment)
+	if r.Method == "POST" {
+		fmt.Println("api processing purchase...")
+		connPayment := openPaymentGRPC()
+		cPayment := pbPayments.NewPaymentsClient(connPayment)
+		
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+		defer cancel()
+		defer connPayment.Close()
 	
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cancel()
-	defer connPayment.Close()
-
-	var shoeInput ShoeInput
-	_ = json.NewDecoder(r.Body).Decode(&shoeInput)
-	fmt.Println("shoeInput test:", shoeInput)
-
-	res, err := cPayment.CreateCharge(ctx, &pbPayments.ChargeRequest{Amount: shoeInput.Price})
-
-	handleError(err)
-
-	rw.Header().Set("Content-Type", "application/json")
-
-	resComms := sendEmail(shoeInput.Email, res)
-
-	if resComms {
-		log.Printf("Charged: %t", res.GetSuccess())
-		json.NewEncoder(rw).Encode("Successful!")
-	} else {
-		json.NewEncoder(rw).Encode("Unsuccessful")
+		var shoeInput ShoeInput
+		_ = json.NewDecoder(r.Body).Decode(&shoeInput)
+	
+		if shoeInput.Email != "" {
+			fmt.Println("api processing purchase (stripe)...")
+			res, err := cPayment.CreateCharge(ctx, &pbPayments.ChargeRequest{Amount: shoeInput.Price})
+	
+			handleError(err)
+	
+			rw.Header().Set("Content-Type", "application/json")
+	
+			var status PurchaseStatus
+			status.PaymentSuccessful = res.GetSuccess()
+	
+			if res.GetSuccess() {
+				fmt.Println("api processing purchase (sendgrid)...")
+				resComms := sendEmail(shoeInput, res)
+				status.EmailSuccessful = resComms
+		
+				if resComms {
+					log.Printf("Charged: %t", res.GetSuccess())
+					status.Message = "Successful!"
+					json.NewEncoder(rw).Encode(status)
+				} else {
+					status.Message = "Unsuccessful"
+					json.NewEncoder(rw).Encode(status)
+				}
+			} else {
+				status.Message = "Purchase unsuccessful"
+				json.NewEncoder(rw).Encode(status)
+			}
+		}
 	}
-
-
 }
 
-func sendEmail(email string, paymentRes *pbPayments.ChargeResponse) bool {
+func sendEmail(shoeInput ShoeInput, paymentRes *pbPayments.ChargeResponse) bool {
 	connComms := openCommsGRPC()
 	cComms := pbComms.NewCommsClient(connComms)
 	ctx, cancel := createContext()
@@ -134,10 +158,11 @@ func sendEmail(email string, paymentRes *pbPayments.ChargeResponse) bool {
 	defer connComms.Close()
 
 	res, err := cComms.SendConfirmation(ctx, &pbComms.ConfirmationRequest{
-		Email:  email,
+		Email:  shoeInput.Email,
 		Id:     paymentRes.Id,
 		Status: paymentRes.GetStatus(),
 		Amount: paymentRes.Amount,
+		ProductName: shoeInput.ProductName,
 	})
 
 	handleError(err)

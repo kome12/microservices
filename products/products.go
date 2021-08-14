@@ -7,10 +7,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
-	"net/http"
 	"os"
 
-	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 
@@ -22,6 +20,7 @@ type server struct {
 }
 
 func (s *server) GetShoes(ctx context.Context, in *p.ShoesRequest) (*p.ShoesResponse, error) {
+	fmt.Println("came into getShoes...")
 	shoes, _ := readProducts()
 	var shoesRequest p.ShoesResponse
 	for _, shoe := range shoes.Shoes {
@@ -35,14 +34,13 @@ func (s *server) GetShoes(ctx context.Context, in *p.ShoesRequest) (*p.ShoesResp
 }
 
 func (s *server) GetShoe(ctx context.Context, in *p.ShoeRequest) (*p.ShoeResponse, error) {
+	fmt.Println("came into getShoe (just 1)...")
 	shoes, _ := readProducts()
 
 	var shoeFound Shoe
 
 	for _, shoe := range shoes.Shoes {
 		if shoe.ID == in.GetId() {
-			fmt.Println("shoe:", shoe)
-			// json.NewEncoder(rw).Encode(shoe)
 			shoeFound = shoe
 			break
 		}
@@ -71,90 +69,18 @@ type Shoes struct {
 	Shoes []Shoe `json:"shoes"`
 }
 
-// func GetShoes(rw http.ResponseWriter, r *http.Request)  {
-// 	EnableCors(&rw)
-
-// 	shoes, _ := readProducts()
-	
-// 	fmt.Println("payload:", shoes)
-// 	rw.Header().Set("Content-Type", "application/json")
-//   json.NewEncoder(rw).Encode(shoes.Shoes)
-// }
-
-func GetShoe(rw http.ResponseWriter, r *http.Request)  {
-	fmt.Println("came into getShoe")
-	EnableCors(&rw)
-	params := mux.Vars(r)
-
-	shoes, _ := readProducts()
-	rw.Header().Set("Content-Type", "application/json")
-
-	var shoeFound Shoe
-
-	for _, shoe := range shoes.Shoes {
-		if shoe.ID == params["id"] {
-			fmt.Println("shoe:", shoe)
-			// json.NewEncoder(rw).Encode(shoe)
-			shoeFound = shoe
-			break
-		}
-	}
-
-	if shoeFound.ID != "" {
-		json.NewEncoder(rw).Encode(shoeFound)
-	} else {
-		json.NewEncoder(rw).Encode(nil)
-	}
-}
-
-func CreatePurchases(rw http.ResponseWriter, r *http.Request)  {
-		fmt.Println("came into post shoe")
-		EnableCors(&rw);
-		rw.Header().Set("Content-Type", "application/json")
-
-  	var shoeInput ShoeInput
-  	_ = json.NewDecoder(r.Body).Decode(&shoeInput)
-		fmt.Println("shoeInput:", shoeInput)
-		
-		json.NewEncoder(rw).Encode(nil)
-}
-
 func readProducts() (shoes Shoes, err error)  {
 	content, err := ioutil.ReadFile("data/products.json")
 
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println("content:", content)
 
-	// var shoes Shoes
 	err = json.Unmarshal(content, &shoes)
 	if err != nil {
 			log.Fatal("Error during Unmarshal(): ", err)
 	}
 	return shoes, err
-}
-
-func readShoes() (shoes p.ShoesResponse, err error) {
-	content, err := ioutil.ReadFile("data/products.json")
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println("content in readShoes():", content)
-
-	err = json.Unmarshal(content, &shoes)
-	fmt.Println("unmarshal version:", shoes)
-	if err != nil {
-			log.Fatal("Error during Unmarshal(): ", err)
-	}
-	return shoes, err
-}
-
-func EnableCors(w *http.ResponseWriter) {
-	header := (*w).Header()
-	header.Set("Access-Control-Allow-Origin", "*")
-	header.Set("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS")
-	header.Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
 }
 
 func init() {

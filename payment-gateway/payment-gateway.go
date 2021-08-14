@@ -30,6 +30,7 @@ func (s *server) CreateCharge(ctx context.Context, in *pb.ChargeRequest) (*pb.Ch
 }
 
 func createCharge(amount int64) *stripe.Charge {
+	fmt.Println("preparing new charge to send to Stripe...")
 	stripe.Key = os.Getenv("STRIPE_KEY")
 
 	// `source` is obtained with Stripe.js; see https://stripe.com/docs/payments/accept-a-payment-charges#web-create-token
@@ -40,10 +41,7 @@ func createCharge(amount int64) *stripe.Charge {
 		Source: &stripe.SourceParams{Token: stripe.String("tok_mastercard")},
 	}
 	c, _ := charge.New(params)
-	// status := c.Status
 
-	fmt.Println("c:", c)
-	// return status == "succeeded"
 	return c
 }
 

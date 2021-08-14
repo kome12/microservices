@@ -12,6 +12,7 @@ message ConfirmationRequest {
   string id = 2;
   string status = 3;
   int64 amount = 4;
+  string productName = 5;
 }
 
 message ConfirmationResponse {
