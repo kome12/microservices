@@ -4,7 +4,7 @@ This was created during my time as a student at [Code Chrysalis](https://www.cod
 
 This is a small group of microservices written in Go.
 
-It has 4 parts
+It has 4 services
 
 1. API Gateway
 2. Payment Gateway (integrated with Stripe API)

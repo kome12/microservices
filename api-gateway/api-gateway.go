@@ -9,7 +9,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 
-	// "github.com/microservices/products"
 	handleapi "github.com/microservices/handleAPI"
 )
 
@@ -28,13 +27,6 @@ func handleRequests() {
 
 	port := os.Getenv("PORT")
 	log.Fatal(http.ListenAndServe(":" + port, router))
-}
-
-func EnableCors(w *http.ResponseWriter) {
-	header := (*w).Header()
-	header.Set("Access-Control-Allow-Origin", "*")
-	header.Set("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS")
-	header.Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
 }
 
 func init() {

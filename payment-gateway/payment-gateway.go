@@ -18,6 +18,7 @@ type server struct {
 	pb.UnimplementedPaymentsServer
 }
 
+// Function requested via gRPC
 func (s *server) CreateCharge(ctx context.Context, in *pb.ChargeRequest) (*pb.ChargeResponse, error) {
 		log.Printf("Received: %v", in.GetAmount())
 		stripeChargeResponse := createCharge(in.GetAmount())
@@ -29,6 +30,7 @@ func (s *server) CreateCharge(ctx context.Context, in *pb.ChargeRequest) (*pb.Ch
 		}, nil
 }
 
+// Sends charged amount to Stripe API
 func createCharge(amount int64) *stripe.Charge {
 	fmt.Println("preparing new charge to send to Stripe...")
 	stripe.Key = os.Getenv("STRIPE_KEY")

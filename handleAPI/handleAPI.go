@@ -30,30 +30,35 @@ type PurchaseStatus struct {
 	Message string
 }
 
+// Handles gRPC Response errors
 func handleError(err error) {
 	if err != nil {
     log.Fatalf("could not process: %v", err)
 	}
 }
 
+// Handles gRPC connection error
 func handleGRPCConnectionError(err error) {
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
 }
 
+// Opens Payment Gateway connection
 func openPaymentGRPC() *grpc.ClientConn {
 	connPayment, err := grpc.Dial(os.Getenv("ADDRESS") + ":" + os.Getenv("PAYMENT_PORT"), grpc.WithInsecure(), grpc.WithBlock())
 	handleGRPCConnectionError(err)
 	return connPayment
 }
 
+// Opens Communications Gateway connection
 func openCommsGRPC() *grpc.ClientConn {
 	connComms, err := grpc.Dial(os.Getenv("ADDRESS") + ":" + os.Getenv("COMMS_PORT"), grpc.WithInsecure(), grpc.WithBlock())
 	handleGRPCConnectionError(err)
 	return connComms
 }
 
+// Opens Product Gateway connection
 func openProductsGRPC() *grpc.ClientConn {
 	connProducts, err := grpc.Dial(os.Getenv("ADDRESS") + ":" + os.Getenv("PRODUCTS_PORT"), grpc.WithInsecure(), grpc.WithBlock())
 	handleGRPCConnectionError(err)
